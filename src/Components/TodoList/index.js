@@ -1,6 +1,6 @@
 import style from './style.module.css'
 import { useDispatch, useSelector } from "react-redux";
-import { addTodo, removeLastTodo } from "./slice";
+import { addTodo, removeLastTodo, fetchTodos } from "./slice";
 import { useFormik } from 'formik';
 import * as Yup from 'yup'
 import TextField from '@material-ui/core/TextField'
@@ -8,8 +8,9 @@ import Button from '@material-ui/core/Button'
 
 
 export const TodoList = () => {
-    const todoList = useSelector(state => state.todoReducer.todoList);
+    const { loading, todoList } = useSelector(state => state.todoReducer);
     return <div>
+        {loading ? <div>Loading...</div> : null}
         <TodoListForm />
         <Todo
             todoList={todoList}
@@ -23,7 +24,6 @@ const Todo = ({ todoList }) => {
         {todoList.map(item => <span key={item.id}>
             <div>ID: {item.id}</div>
             <div>TITLE: {item.title}</div>
-            <div>DESCRIPTION: {item.description}</div>
         </span>)}
     </div>
 };
@@ -52,6 +52,9 @@ const TodoListForm = () => {
     const deleteButtonClickHandler = () => {
         dispatch(removeLastTodo());
     }
+    const fetchTodosHandler = () => {
+        dispatch(fetchTodos())
+    }
     return <form onSubmit={formik.handleSubmit} className={style.formWrapper}>
         <TextField
             fullWidth
@@ -59,7 +62,7 @@ const TodoListForm = () => {
             name='title'
             value={formik.values.title}
             onChange={formik.handleChange}
-            error={formik.touched.title && formik.errors.title}
+            error={formik.touched.title && Boolean(formik.errors.title)}
             helperText={formik.touched.title && formik.errors.title}
         />
         <TextField
@@ -83,6 +86,13 @@ const TodoListForm = () => {
             fullWidth
             variant="contained"
             color="secondary">Delete last
+        </Button>
+        <Button
+            onClick={fetchTodosHandler}
+            type={'button'}
+            fullWidth
+            variant="contained"
+            color="default">Fetch todos
         </Button>
     </form>
 };
